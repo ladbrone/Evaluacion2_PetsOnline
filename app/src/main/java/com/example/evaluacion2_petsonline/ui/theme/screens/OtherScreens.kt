@@ -5,11 +5,6 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 
 @Composable
-fun MascotasScreen(navController: NavController) {
-    Text("Pantalla Mascotas")
-}
-
-@Composable
 fun ProductosScreen(navController: NavController) {
     Text("Pantalla Productos")
 }
