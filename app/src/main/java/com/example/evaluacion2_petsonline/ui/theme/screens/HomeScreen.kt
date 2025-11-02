@@ -31,6 +31,9 @@ fun HomeScreen(navController: NavController) {
             Button(onClick = { navController.navigate("productos") }) {
                 Text("Productos")
             }
+            Button(onClick = { navController.navigate("reserva") }) {
+                Text("Reservar Cita")
+            }
         }
     }
 }

@@ -8,8 +8,3 @@ import androidx.navigation.NavController
 fun ProductosScreen(navController: NavController) {
     Text("Pantalla Productos")
 }
-
-@Composable
-fun ReservaScreen(navController: NavController) {
-    Text("Pantalla Reserva")
-}
