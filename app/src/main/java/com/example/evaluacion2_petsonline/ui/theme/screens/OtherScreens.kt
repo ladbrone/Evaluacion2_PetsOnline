@@ -10,11 +10,6 @@ fun ProductosScreen(navController: NavController) {
 }
 
 @Composable
-fun ServiciosScreen(navController: NavController) {
-    Text("Pantalla Servicios")
-}
-
-@Composable
 fun ReservaScreen(navController: NavController) {
     Text("Pantalla Reserva")
 }
