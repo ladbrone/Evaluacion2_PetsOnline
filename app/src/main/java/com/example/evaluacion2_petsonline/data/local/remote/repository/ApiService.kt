@@ -1,5 +1,6 @@
 package com.example.evaluacion2_petsonline.data.remote
 
+import com.google.gson.annotations.SerializedName
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -10,9 +11,17 @@ data class LoginRequest(
     val password: String
 )
 
+// Ajusta el nombre de acuerdo al campo real del token que te devuelve Xano
 data class LoginResponse(
-    val authToken: String?, // depende del JSON de tu Xano (ajustamos si es diferente)
-    val message: String?
+    @SerializedName("authToken")
+    val authToken: String?, // puede ser "token" si Xano lo devuelve así
+    @SerializedName("user")
+    val user: UserResponse?
+)
+
+data class UserResponse(
+    val id: Int?,
+    val email: String?
 )
 
 interface ApiService {
@@ -20,5 +29,5 @@ interface ApiService {
     suspend fun login(@Body request: LoginRequest): LoginResponse
 
     @GET("auth/me")
-    suspend fun getProfile(@Header("Authorization") token: String): Any
+    suspend fun getProfile(@Header("Authorization") token: String): UserResponse
 }
