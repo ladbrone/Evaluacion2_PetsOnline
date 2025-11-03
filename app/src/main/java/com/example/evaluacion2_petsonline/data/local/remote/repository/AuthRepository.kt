@@ -13,27 +13,23 @@ class AuthRepository(context: Context) {
     private val api = RetrofitClient.create(context).create(ApiService::class.java)
     private val session = SessionManager(context)
 
-    // Guardar el token en el DataStore
     suspend fun saveToken(token: String) {
         session.saveToken(token)
     }
 
-    // Obtener el token del DataStore
     suspend fun getToken(): String? {
         return session.getToken()
     }
 
-    // Login
     suspend fun login(email: String, password: String): Result<String> {
         return try {
             val response = api.login(LoginRequest(email, password))
             val token = response.authToken ?: return Result.failure(Exception("No se recibió token"))
-            saveToken(token) // Guardar token al iniciar sesión
+            saveToken(token)
             Result.success(token)
         } catch (e: Exception) {
             when (e) {
                 is HttpException -> {
-                    // Manejo de errores HTTP
                     if (e.code() == 403) {
                         Result.failure(Exception("Correo o contraseña incorrectos"))
                     } else {
@@ -53,12 +49,11 @@ class AuthRepository(context: Context) {
         }
     }
 
-    // Registro de usuario
     suspend fun signup(email: String, password: String): Result<String> {
         return try {
             val response = api.signup(LoginRequest(email, password))
             val token = response.authToken ?: return Result.failure(Exception("No se recibió token"))
-            saveToken(token) // Guardar token al registrarse
+            saveToken(token)
             Result.success(token)
         } catch (e: Exception) {
             when (e) {
@@ -82,7 +77,6 @@ class AuthRepository(context: Context) {
         }
     }
 
-    // Obtener el perfil de usuario
     suspend fun getProfile(): Result<String> {
         return try {
             val token = session.getToken() ?: return Result.failure(Exception("No hay token guardado"))

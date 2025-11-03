@@ -27,7 +27,10 @@ class MascotaViewModel(app: Application) : AndroidViewModel(app) {
 
     init {
         viewModelScope.launch {
-            repo.getMascotas().collectLatest { mascotas ->
+            val savedMascotas = repo.getCurrentMascotas()
+            _ui.value = _ui.value.copy(lista = savedMascotas)
+
+            repo.getMascotas().collect { mascotas ->
                 _ui.value = _ui.value.copy(lista = mascotas)
             }
         }

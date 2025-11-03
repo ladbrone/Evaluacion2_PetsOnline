@@ -1,7 +1,6 @@
 package com.example.evaluacion2_petsonline.data.local.repository
 
 import android.content.Context
-import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -27,24 +26,24 @@ class MascotaRepository(private val context: Context) {
     }
 
     suspend fun saveMascota(mascota: Mascota) {
-        val list = getCurrentMascotas().toMutableList()
-        list.add(mascota)
-        saveList(list)
+        val current = getCurrentMascotas().toMutableList()
+        current.add(mascota)
+        saveList(current)
     }
 
     suspend fun deleteMascota(id: Int) {
-        val list = getCurrentMascotas().filter { it.id != id }
-        saveList(list)
+        val updated = getCurrentMascotas().filter { it.id != id }
+        saveList(updated)
     }
 
     private suspend fun saveList(list: List<Mascota>) {
         val json = gson.toJson(list)
-        context.mascotaDataStore.edit { it[KEY] = json }
+        context.mascotaDataStore.edit { prefs -> prefs[KEY] = json }
     }
 
-    private suspend fun getCurrentMascotas(): List<Mascota> {
-        val prefs = context.mascotaDataStore.data.map { it[KEY] ?: "[]" }.first()
+    suspend fun getCurrentMascotas(): List<Mascota> {
+        val json = context.mascotaDataStore.data.map { it[KEY] ?: "[]" }.first()
         val type = object : TypeToken<List<Mascota>>() {}.type
-        return gson.fromJson(prefs, type)
+        return gson.fromJson(json, type)
     }
 }

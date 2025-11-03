@@ -16,22 +16,20 @@ import com.example.evaluacion2_petsonline.ui.screens.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavigation() {
+fun AppNavigation(startDestination: String = "login") {
     val navController = rememberNavController()
     val context = LocalContext.current
     val session = SessionManager(context)
 
     Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("PetsOnline SPA") })
-        }
+        topBar = { TopAppBar(title = { Text("PetsOnline SPA") }) }
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = "splash",
+            startDestination = startDestination,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("splash") { SplashScreen(navController) }
+            composable("splash") { SplashScreen(navController, session) }
             composable("login") { LoginScreen(navController) }
             composable("signup") { SignupScreen(navController) }
             composable("home") { HomeScreen(navController) }
@@ -43,3 +41,4 @@ fun AppNavigation() {
         }
     }
 }
+

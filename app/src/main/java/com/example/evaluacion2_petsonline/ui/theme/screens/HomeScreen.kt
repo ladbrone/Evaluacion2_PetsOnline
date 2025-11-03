@@ -48,7 +48,6 @@ fun HomeScreen(navController: NavController) {
         }
     }
 
-    // 📱 UI del Home
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center

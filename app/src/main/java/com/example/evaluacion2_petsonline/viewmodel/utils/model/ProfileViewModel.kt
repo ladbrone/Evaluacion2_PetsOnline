@@ -1,68 +1,63 @@
 package com.example.evaluacion2_petsonline.viewmodel
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.evaluacion2_petsonline.repository.AuthRepository
-import com.example.evaluacion2_petsonline.data.local.repository.AvatarRepository
+import com.example.evaluacion2_petsonline.data.local.SessionManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-// Estado de la interfaz de usuario del perfil
 data class ProfileUiState(
     val isLoading: Boolean = false,
     val email: String? = null,
-    val error: String? = null,
-    val avatarUri: String? = null // 🔹 agregamos el campo para la imagen
+    val avatarUri: String? = null,
+    val error: String? = null
 )
 
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = AuthRepository(application)
-    private val avatarRepo = AvatarRepository(application)
+    private val sessionManager = SessionManager(application)
 
     private val _uiState = MutableStateFlow(ProfileUiState(isLoading = true))
     val uiState: StateFlow<ProfileUiState> = _uiState
 
     init {
-        loadProfile()
-        observeAvatar() // 👀 Escucha cambios del avatar guardado
-    }
-
-    // 🔹 Carga datos del perfil (desde backend)
-    private fun loadProfile() {
         viewModelScope.launch {
             val result = repository.getProfile()
-            _uiState.value = result.fold(
-                onSuccess = { ProfileUiState(isLoading = false, email = it) },
-                onFailure = { ProfileUiState(isLoading = false, error = it.message) }
+            val email = result.getOrNull()
+
+            val avatarUri = sessionManager.getAvatarUri()
+
+            _uiState.value = ProfileUiState(
+                isLoading = false,
+                email = email,
+                avatarUri = avatarUri
             )
         }
     }
 
-    // 🔹 Escucha cambios del avatar en DataStore
-    private fun observeAvatar() {
+    fun saveAvatar(uri: String) {
         viewModelScope.launch {
-            avatarRepo.getAvatar().collectLatest { uri ->
-                _uiState.value = _uiState.value.copy(avatarUri = uri)
+            val context = getApplication<Application>().applicationContext
+            val localPath = com.example.evaluacion2_petsonline.utils.ImageUtils.saveImageToInternalStorage(
+                context,
+                Uri.parse(uri)
+            )
+
+            localPath?.let {
+                sessionManager.saveAvatarUri(it)
+                _uiState.value = _uiState.value.copy(avatarUri = it)
             }
         }
     }
 
-    // 🔹 Guarda avatar seleccionado
-    fun saveAvatar(uri: String) {
-        viewModelScope.launch {
-            avatarRepo.saveAvatar(uri)
-            _uiState.value = _uiState.value.copy(avatarUri = uri)
-        }
-    }
 
-    // 🔹 Limpia el avatar (opcional)
-    fun clearAvatar() {
+    fun logout() {
         viewModelScope.launch {
-            avatarRepo.clearAvatar()
-            _uiState.value = _uiState.value.copy(avatarUri = null)
+            sessionManager.clearToken()
         }
     }
 }
