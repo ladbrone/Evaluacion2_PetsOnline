@@ -5,33 +5,84 @@ import com.example.evaluacion2_petsonline.data.local.SessionManager
 import com.example.evaluacion2_petsonline.data.remote.ApiService
 import com.example.evaluacion2_petsonline.data.remote.LoginRequest
 import com.example.evaluacion2_petsonline.data.remote.RetrofitClient
+import java.net.UnknownHostException
+import java.net.SocketTimeoutException
+import retrofit2.HttpException
 
 class AuthRepository(context: Context) {
     private val api = RetrofitClient.create(context).create(ApiService::class.java)
     private val session = SessionManager(context)
 
+    // Guardar el token en el DataStore
+    suspend fun saveToken(token: String) {
+        session.saveToken(token)
+    }
+
+    // Obtener el token del DataStore
+    suspend fun getToken(): String? {
+        return session.getToken()
+    }
+
+    // Login
     suspend fun login(email: String, password: String): Result<String> {
         return try {
             val response = api.login(LoginRequest(email, password))
             val token = response.authToken ?: return Result.failure(Exception("No se recibió token"))
-            session.saveToken(token)
+            saveToken(token) // Guardar token al iniciar sesión
             Result.success(token)
         } catch (e: Exception) {
-            Result.failure(e)
+            when (e) {
+                is HttpException -> {
+                    // Manejo de errores HTTP
+                    if (e.code() == 403) {
+                        Result.failure(Exception("Correo o contraseña incorrectos"))
+                    } else {
+                        Result.failure(Exception("Error desconocido: ${e.message}"))
+                    }
+                }
+                is UnknownHostException -> {
+                    Result.failure(Exception("No se pudo conectar al servidor. Verifica tu conexión a Internet"))
+                }
+                is SocketTimeoutException -> {
+                    Result.failure(Exception("La conexión ha tardado demasiado. Intenta de nuevo"))
+                }
+                else -> {
+                    Result.failure(Exception("Ocurrió un error inesperado. Intenta más tarde"))
+                }
+            }
         }
     }
 
+    // Registro de usuario
     suspend fun signup(email: String, password: String): Result<String> {
         return try {
             val response = api.signup(LoginRequest(email, password))
             val token = response.authToken ?: return Result.failure(Exception("No se recibió token"))
-            session.saveToken(token)
+            saveToken(token) // Guardar token al registrarse
             Result.success(token)
         } catch (e: Exception) {
-            Result.failure(e)
+            when (e) {
+                is HttpException -> {
+                    if (e.code() == 400) {
+                        Result.failure(Exception("Error en el registro: ${e.message}"))
+                    } else {
+                        Result.failure(Exception("Error desconocido: ${e.message}"))
+                    }
+                }
+                is UnknownHostException -> {
+                    Result.failure(Exception("No se pudo conectar al servidor. Verifica tu conexión a Internet"))
+                }
+                is SocketTimeoutException -> {
+                    Result.failure(Exception("La conexión ha tardado demasiado. Intenta de nuevo"))
+                }
+                else -> {
+                    Result.failure(Exception("Ocurrió un error inesperado. Intenta más tarde"))
+                }
+            }
         }
     }
 
+    // Obtener el perfil de usuario
     suspend fun getProfile(): Result<String> {
         return try {
             val token = session.getToken() ?: return Result.failure(Exception("No hay token guardado"))
@@ -41,8 +92,20 @@ class AuthRepository(context: Context) {
             Result.success(email)
 
         } catch (e: Exception) {
-            Result.failure(e)
+            when (e) {
+                is HttpException -> {
+                    Result.failure(Exception("Error al obtener el perfil: ${e.message}"))
+                }
+                is UnknownHostException -> {
+                    Result.failure(Exception("No se pudo conectar al servidor. Verifica tu conexión a Internet"))
+                }
+                is SocketTimeoutException -> {
+                    Result.failure(Exception("La conexión ha tardado demasiado. Intenta de nuevo"))
+                }
+                else -> {
+                    Result.failure(Exception("Ocurrió un error inesperado al obtener el perfil. Intenta más tarde"))
+                }
+            }
         }
     }
-
 }
