@@ -33,8 +33,6 @@ La aplicación interactúa con una API REST externa que maneja la autenticación
    - Requiere: Header con token de autenticación.
    - Respuesta: Detalles del usuario (como correo electrónico).
 
-4. **Mascotas**: `GET /mascotas` (por ejemplo, para obtener la lista de mascotas registradas)
-
 
 - **Jetpack Compose**: Para construir la interfaz de usuario de manera declarativa.
 - **MVVM**: Para mantener una arquitectura limpia y separada de la lógica de la UI.
