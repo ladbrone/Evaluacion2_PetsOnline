@@ -5,7 +5,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
@@ -16,14 +16,21 @@ import com.example.evaluacion2_petsonline.ui.screens.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavigation(startDestination: String = "login") {
+fun AppNavigation(startDestination: String) {
     val navController = rememberNavController()
     val context = LocalContext.current
-    val session = SessionManager(context)
+    val session = remember { SessionManager(context) }
+
+    var startDestination by remember { mutableStateOf("splash") }
+
+    LaunchedEffect(Unit) {
+        startDestination = if (session.getToken() != null) "home" else "login"
+    }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("PetsOnline SPA") }) }
+        topBar = { TopAppBar(title = { Text("PetsOnline SPA") }) },
     ) { innerPadding ->
+
         NavHost(
             navController = navController,
             startDestination = startDestination,
@@ -41,4 +48,3 @@ fun AppNavigation(startDestination: String = "login") {
         }
     }
 }
-

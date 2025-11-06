@@ -3,6 +3,7 @@ package com.example.evaluacion2_petsonline.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -54,10 +55,11 @@ fun ReservaScreen(navController: NavController, vm: ReservaViewModel = viewModel
 
             OutlinedTextField(
                 value = state.fecha,
-                onValueChange = { vm.onFecha(it) },
-                label = { Text("Fecha (ej: 10/11/2025)") },
-                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = KeyboardType.Text),
-                modifier = Modifier.fillMaxWidth()
+                onValueChange = { vm.onFecha(it.take(10)) },
+                label = { Text("Fecha (dd/MM/yyyy)") },
+                placeholder = { Text("24/01/2006") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = state.error?.contains("fecha", ignoreCase = true) == true
             )
 
             OutlinedTextField(

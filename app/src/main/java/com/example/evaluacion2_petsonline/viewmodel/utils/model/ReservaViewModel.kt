@@ -38,13 +38,27 @@ class ReservaViewModel(app: Application) : AndroidViewModel(app) {
     fun onFecha(v: String) { _ui.value = _ui.value.copy(fecha = v) }
     fun onObs(v: String) { _ui.value = _ui.value.copy(observacion = v) }
 
+    private fun isValidDate(input: String): Boolean {
+        if (!Regex("""^\d{2}/\d{2}/\d{4}$""").matches(input)) return false
+        return try {
+            java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault()).apply {
+                isLenient = false
+            }.parse(input)
+            true
+        } catch (_: Exception) { false }
+    }
+
     fun agregarReserva() {
         val s = _ui.value
         if (s.nombreMascota.isBlank() || s.servicio.isBlank() || s.fecha.isBlank()) {
             _ui.value = s.copy(error = "Completa todos los campos obligatorios")
             return
         }
-        val nueva = Reserva(
+        if (!isValidDate(s.fecha)) {
+            _ui.value = s.copy(error = "La fecha debe ser válida con formato dd/MM/yyyy")
+            return
+        }
+        val nueva = com.example.evaluacion2_petsonline.data.local.model.Reserva(
             id = (s.lista.maxOfOrNull { it.id } ?: 0) + 1,
             nombreMascota = s.nombreMascota,
             servicio = s.servicio,
@@ -54,8 +68,9 @@ class ReservaViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { repo.saveReserva(nueva) }
         _ui.value = s.copy(nombreMascota = "", servicio = "", fecha = "", observacion = "", error = null)
     }
-
     fun eliminarReserva(id: Int) {
         viewModelScope.launch { repo.deleteReserva(id) }
     }
+
+
 }

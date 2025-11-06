@@ -16,17 +16,21 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
     val state by viewModel.uiState.collectAsState()
 
     Box(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text("Iniciar sesión", style = MaterialTheme.typography.headlineMedium)
+
             OutlinedTextField(
                 value = state.email,
                 onValueChange = { viewModel.onEmailChange(it) },
                 label = { Text("Correo electrónico") },
                 modifier = Modifier.fillMaxWidth()
             )
+
             OutlinedTextField(
                 value = state.password,
                 onValueChange = { viewModel.onPasswordChange(it) },
@@ -49,9 +53,18 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel = viewMo
 
             if (state.success) {
                 LaunchedEffect(Unit) {
-                    navController.navigate("home")
+                    navController.navigate("home") {
+                        popUpTo("login") { inclusive = true }
+                        launchSingleTop = true
+                    }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            TextButton(onClick = { navController.navigate("signup") }) {
+                Text("¿No tienes cuenta? Regístrate aquí")
             }
         }
     }
 }
+
